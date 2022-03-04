@@ -1,5 +1,16 @@
 # Changelog
 
+## Version v0.1.2 (2022-03-04)
+
+### Fixes
+
+- **release-commits:** parse merge requests with one line (013ec753)
+- **releases:** include changelog in docs (#9) (1c357053)
+
+### Documentation
+
+- **semanticore:** suggest using v0 instead of main (0679b50b)
+
 ## Version v0.1.1 (2022-03-04)
 
 ### Fixes
