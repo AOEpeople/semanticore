@@ -105,7 +105,7 @@ func (github Github) CloseMergeRequest() error {
 	data := githubPullBody{
 		State: "closed",
 	}
-	return github.request(http.MethodPut, fmt.Sprintf("/pulls/%d", iid), http.StatusOK, data, nil)
+	return github.request(http.MethodPatch, fmt.Sprintf("/pulls/%d", iid), http.StatusOK, data, nil)
 }
 
 func (github Github) MergeRequest(target, title, description, labels string) error {
