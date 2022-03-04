@@ -51,9 +51,9 @@ jobs:
         go: [ '1.*' ]
     name: Semanticore
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
       - name: Semanticore
