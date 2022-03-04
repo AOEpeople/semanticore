@@ -1,5 +1,12 @@
 # Changelog
 
+## Version v0.1.1 (2022-03-04)
+
+### Fixes
+
+- **commitparser:** correctly identify release commits (6f8cd9a8)
+- **github:** correctly parse github release commits (cf296de5)
+
 ## Version v0.1.0 (2022-03-04)
 
 ### Features
