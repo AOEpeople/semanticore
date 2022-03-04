@@ -131,20 +131,18 @@ type githubReleaseBody struct {
 	TargetCommitish      string `json:"target_commitish"`
 	Name                 string `json:"name"`
 	GenerateReleaseNotes bool   `json:"generate_release_notes"`
+	Body                 string `json:"body"`
 }
 
-func (github Github) Tag(tag, ref string) error {
+func (github Github) Release(tag, ref, changelog string) error {
 	data := githubReleaseBody{
 		TagName:              tag,
 		TargetCommitish:      ref,
 		Name:                 tag,
 		GenerateReleaseNotes: true,
+		Body:                 changelog,
 	}
 	return github.request(http.MethodPost, "/releases", http.StatusCreated, data, nil)
-}
-
-func (github Github) Release(tag string) error {
-	return nil // noop
 }
 
 func (github Github) MainBranch() (string, error) {

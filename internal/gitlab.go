@@ -115,16 +115,17 @@ func (gitlab Gitlab) MergeRequest(target, title, description, labels string) err
 	return gitlab.request(http.MethodPost, fmt.Sprintf("projects/%s/merge_requests", url.PathEscape(gitlab.repo)), http.StatusCreated, strings.NewReader(data.Encode()), nil)
 }
 
-func (gitlab Gitlab) Tag(tag, ref string) error {
+func (gitlab Gitlab) Release(tag, ref, changelog string) error {
 	data := make(url.Values)
 	data.Set("tag_name", tag)
 	data.Set("ref", ref)
-	return gitlab.request(http.MethodPost, fmt.Sprintf("projects/%s/repository/tags", url.PathEscape(gitlab.repo)), http.StatusCreated, strings.NewReader(data.Encode()), nil)
-}
+	if err := gitlab.request(http.MethodPost, fmt.Sprintf("projects/%s/repository/tags", url.PathEscape(gitlab.repo)), http.StatusCreated, strings.NewReader(data.Encode()), nil); err != nil {
+		return fmt.Errorf("unable to tag release %s on %s: %w", tag, ref, err)
+	}
 
-func (gitlab Gitlab) Release(tag string) error {
-	data := make(url.Values)
+	data = make(url.Values)
 	data.Set("tag_name", tag)
+	data.Set("description", changelog)
 	return gitlab.request(http.MethodPost, fmt.Sprintf("projects/%s/releases", url.PathEscape(gitlab.repo)), http.StatusCreated, strings.NewReader(data.Encode()), nil)
 }
 
