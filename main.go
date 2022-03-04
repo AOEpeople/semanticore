@@ -297,7 +297,9 @@ func main() {
 	}))
 
 	releasetype := "patch 🩹"
-	if len(features) > 0 {
+	if breaking && *createMajor {
+		releasetype = "major 👏"
+	} else if len(features) > 0 {
 		releasetype = "minor 📦"
 	}
 	labels := "Release 🏆," + releasetype
