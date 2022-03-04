@@ -92,7 +92,7 @@ func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	return typ, scope, commitDescription, major
 }
 
-var releaseCommitRegex = regexp.MustCompile(`^Release v(\d+).(\d+).(\d+)$`)
+var releaseCommitRegex = regexp.MustCompile(`^Release v(\d+).(\d+).(\d+)( \(.*\))?$`)
 
 func DetectReleaseCommit(commit string, merge bool) (major, minor, patch int) {
 	candidates := []string{commit}

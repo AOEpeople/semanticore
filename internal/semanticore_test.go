@@ -73,6 +73,7 @@ func TestDetectReleaseCommit(t *testing.T) {
 		{"Release v1.2.3\n\nfoo", false, 0, 0, 0},
 		{"Fixed Release v1.2.3", false, 0, 0, 0},
 		{"Release v1.2.3 was totally broken", false, 0, 0, 0},
+		{"Release v1.2.3 (#15)", false, 1, 2, 3},
 	}
 	for _, c := range cases {
 		major, minor, patch := DetectReleaseCommit(c.commit, c.merge)
