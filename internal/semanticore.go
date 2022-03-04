@@ -96,7 +96,7 @@ var releaseCommitRegex = regexp.MustCompile(`^Release v(\d+).(\d+).(\d+)( \(.*\)
 func DetectReleaseCommit(commit string, merge bool) (major, minor, patch int) {
 	candidates := []string{strings.SplitN(commit, "\n\n", 2)[0]}
 	if merge {
-		candidates = strings.Split(strings.SplitN(commit, "\n\n", 2)[1], "\n")
+		candidates = strings.Split(commit, "\n")
 	}
 	for _, candidate := range candidates {
 		matches := releaseCommitRegex.FindStringSubmatch(candidate)

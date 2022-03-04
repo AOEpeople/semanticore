@@ -74,6 +74,7 @@ func TestDetectReleaseCommit(t *testing.T) {
 		{"Fixed Release v1.2.3", false, 0, 0, 0},
 		{"Release v1.2.3 was totally broken", false, 0, 0, 0},
 		{"Release v1.2.3 (#15)", false, 1, 2, 3},
+		{"Release v1.2.3 (#15)", true, 1, 2, 3},
 		{"Release v1.2.3 (#15)\n\nCo-authored-by: test", false, 1, 2, 3},
 	}
 	for _, c := range cases {
