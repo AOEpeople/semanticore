@@ -73,7 +73,7 @@ func TestGithub(t *testing.T) {
 	testmux.HandleFunc("/repos/my/testrepo/releases", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	})
-	assert.NoError(t, github.Tag("main", "v1.2.3"))
+	assert.NoError(t, github.Release("main", "v1.2.3", "changelog"))
 
 	testmux.HandleFunc("/repos/my/testrepo", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, `{"default_branch": "main"}`)

@@ -10,8 +10,7 @@ import (
 
 type Backend interface {
 	transport.AuthMethod
-	Tag(tag, ref string) error
-	Release(tag string) error
+	Release(tag, ref, changelog string) error
 	MergeRequest(target, title, description, labels string) error
 	CloseMergeRequest() error
 	MainBranch() (string, error)

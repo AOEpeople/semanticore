@@ -129,10 +129,19 @@ func main() {
 			latest = fmt.Sprintf("v%d.%d.%d", major, minor, patch)
 			log.Printf("[semanticore] found version %s at %s: %q", latest, commit.Hash, msg)
 			if backend != nil && (*createTag || *createRelease) {
-				try(backend.Tag(latest, commit.Hash.String()))
-			}
-			if backend != nil && (*createRelease) {
-				try(backend.Release(latest))
+				changelog := ""
+				fi, err := commit.Files()
+				if err == nil {
+					fi.ForEach(func(f *object.File) error {
+						if strings.ToLower(f.Name) == "changelog.md" {
+							c, _ := f.Contents()
+							changelog = "## Version v" + strings.Split(c, "## Version v")[1]
+							changelog = strings.TrimSpace(changelog)
+						}
+						return nil
+					})
+				}
+				try(backend.Release(latest, commit.Hash.String(), changelog))
 			}
 			break
 		}

@@ -71,12 +71,10 @@ func TestGitlab(t *testing.T) {
 	testmux.HandleFunc("/api/v4/projects/my/test/repo/repository/tags", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	})
-	assert.NoError(t, gitlab.Tag("v1.2.3", "abc123"))
-
 	testmux.HandleFunc("/api/v4/projects/my/test/repo/releases", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	})
-	assert.NoError(t, gitlab.Release("v1.2.3"))
+	assert.NoError(t, gitlab.Release("v1.2.3", "abc123", "changelog"))
 
 	testmux.HandleFunc("/api/v4/projects/my/test/repo", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, `{"default_branch": "main"}`)
