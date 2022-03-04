@@ -59,7 +59,7 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - name: Semanticore
-        run: go run github.com/aoepeople/semanticore@main
+        run: go run github.com/aoepeople/semanticore@v0
         env:
           SEMANTICORE_TOKEN: ${{secrets.GITHUB_TOKEN}}
 ```
@@ -75,7 +75,7 @@ semanticore:
   image: golang:1
   stage: semanticore
   script:
-    - go run github.com/aoepeople/semanticore@main
+    - go run github.com/aoepeople/semanticore@v0
   only:
     - main
 ```
