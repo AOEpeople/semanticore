@@ -67,6 +67,8 @@ func main() {
 		tag, _ := repo.TagObject(r.Hash())
 		if tag != nil {
 			tags[tag.Target.String()] = append(tags[tag.Target.String()], r)
+		} else {
+			tags[r.Hash().String()] = append(tags[r.Hash().String()], r)
 		}
 		return nil
 	})
@@ -81,11 +83,9 @@ func main() {
 	vregex := regexp.MustCompile(`v(\d+).(\d+).(\d+)`)
 	var logs []*object.Commit
 	glog.ForEach(func(c *object.Commit) error {
-		log.Println(c.Hash.String())
 		if tags, ok := tags[c.Hash.String()]; ok {
 			for _, tag := range tags {
 				match := vregex.FindStringSubmatch(tag.Name().String())
-				log.Println(match)
 				if len(match) == 4 {
 					tagMajor, _ := strconv.Atoi(match[1])
 					tagMinor, _ := strconv.Atoi(match[2])
@@ -94,8 +94,8 @@ func main() {
 						major = tagMajor
 						minor = tagMinor
 						patch = tagPatch
+						return errors.New("done")
 					}
-					return errors.New("done")
 				}
 			}
 		}
