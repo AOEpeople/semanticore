@@ -59,12 +59,15 @@ func main() {
 		backend = internal.NewGitlabBackend(os.Getenv("SEMANTICORE_TOKEN"), remoteUrl.Host, repoId)
 	}
 
-	tags := make(map[string]*plumbing.Reference)
+	tags := make(map[string][]*plumbing.Reference)
 	gittags, err := repo.Tags()
 	try(err)
 
 	err = gittags.ForEach(func(r *plumbing.Reference) error {
-		tags[r.Hash().String()] = r
+		tag, _ := repo.TagObject(r.Hash())
+		if tag != nil {
+			tags[tag.Target.String()] = append(tags[tag.Target.String()], r)
+		}
 		return nil
 	})
 	try(err)
@@ -78,13 +81,22 @@ func main() {
 	vregex := regexp.MustCompile(`v(\d+).(\d+).(\d+)`)
 	var logs []*object.Commit
 	glog.ForEach(func(c *object.Commit) error {
-		if tag, ok := tags[c.Hash.String()]; ok {
-			match := vregex.FindStringSubmatch(tag.Name().String())
-			if len(match) == 4 {
-				major, _ = strconv.Atoi(match[1])
-				minor, _ = strconv.Atoi(match[2])
-				patch, _ = strconv.Atoi(match[3])
-				return errors.New("done")
+		log.Println(c.Hash.String())
+		if tags, ok := tags[c.Hash.String()]; ok {
+			for _, tag := range tags {
+				match := vregex.FindStringSubmatch(tag.Name().String())
+				log.Println(match)
+				if len(match) == 4 {
+					tagMajor, _ := strconv.Atoi(match[1])
+					tagMinor, _ := strconv.Atoi(match[2])
+					tagPatch, _ := strconv.Atoi(match[3])
+					if tagMajor > major || (tagMajor == major && tagMinor > minor) || (tagMajor == major && tagMinor == minor && tagPatch > patch) {
+						major = tagMajor
+						minor = tagMinor
+						patch = tagPatch
+					}
+					return errors.New("done")
+				}
 			}
 		}
 		logs = append(logs, c)
