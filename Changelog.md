@@ -1,5 +1,13 @@
 # Changelog
 
+## Version v0.1.3 (2022-03-07)
+
+### Fixes
+
+- **tags:** correctly handle lightweight and annotated tags (6dd9a41e)
+- **versions:** correctly parse existing version tags (#13) (24f407a5)
+- **merge-request:** correctly show major release (#11) (2f7d6305)
+
 ## Version v0.1.2 (2022-03-04)
 
 ### Fixes
