@@ -20,6 +20,6 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - name: Semanticore
-        run: go run github.com/aoepeople/semanticore@main
+        run: go run .
         env:
           SEMANTICORE_TOKEN: ${{secrets.GITHUB_TOKEN}}
