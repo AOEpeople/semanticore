@@ -69,23 +69,27 @@ func TestDetectReleaseCommit(t *testing.T) {
 	var cases = []struct {
 		commit              string
 		merge               bool
+		vPrefix             string
 		major, minor, patch int
 	}{
-		{"Release v1.2.3", false, 1, 2, 3},
-		{"Merge a into b\n\nRelease v1.2.3\n\nFoo bar", true, 1, 2, 3},
-		{"multi line\n\nRelease v1.2.3\n\nFoo bar", false, 0, 0, 0},
-		{"Release v1.2.3\nfoo", false, 0, 0, 0},
-		{"Release v1.2.3\n\nfoo", false, 1, 2, 3},
-		{"Fixed Release v1.2.3", false, 0, 0, 0},
-		{"Release v1.2.3 was totally broken", false, 0, 0, 0},
-		{"Release v1.2.3 (#15)", false, 1, 2, 3},
-		{"Release v1.2.3 (#15)", true, 1, 2, 3},
-		{"Release v1.2.3 (#15)\n\nCo-authored-by: test", false, 1, 2, 3},
+		{"Release v1.2.3", false, "v", 1, 2, 3},
+		{"Merge a into b\n\nRelease v1.2.3\n\nFoo bar", true, "v", 1, 2, 3},
+		{"multi line\n\nRelease v1.2.3\n\nFoo bar", false, "v", 0, 0, 0},
+		{"Release v1.2.3\nfoo", false, "v", 0, 0, 0},
+		{"Release v1.2.3\n\nfoo", false, "v", 1, 2, 3},
+		{"Fixed Release v1.2.3", false, "v", 0, 0, 0},
+		{"Release v1.2.3 was totally broken", false, "v", 0, 0, 0},
+		{"Release v1.2.3 (#15)", false, "v", 1, 2, 3},
+		{"Release v1.2.3 (#15)", true, "v", 1, 2, 3},
+		{"Release v1.2.3 (#15)\n\nCo-authored-by: test", false, "v", 1, 2, 3},
+		{"Release 1.2.3 (#15)\n\nCo-authored-by: test", false, "", 1, 2, 3},
+		{"Release 1.2.3 (#15)", true, "", 1, 2, 3},
+		{"Merge a into b\n\nRelease 1.2.3\n\nFoo bar", true, "", 1, 2, 3},
 	}
 	for _, c := range cases {
-		major, minor, patch := DetectReleaseCommit(c.commit, c.merge)
-		if major != c.major || minor != c.minor || patch != c.patch {
-			t.Errorf("detectReleaseCommit %q failed with %d != %d, %d != %d, %d != %d", c.commit, c.major, major, c.minor, minor, c.patch, patch)
+		vPrefix, major, minor, patch := DetectReleaseCommit(c.commit, c.merge)
+		if vPrefix != c.vPrefix || major != c.major || minor != c.minor || patch != c.patch {
+			t.Errorf("detectReleaseCommit %q failed with %q != %q, %d != %d, %d != %d, %d != %d", c.commit, c.vPrefix, vPrefix, c.major, major, c.minor, minor, c.patch, patch)
 		}
 	}
 }

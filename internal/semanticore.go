@@ -96,21 +96,22 @@ func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	return typ, scope, commitDescription, major
 }
 
-var releaseCommitRegex = regexp.MustCompile(`^Release v(\d+).(\d+).(\d+)( \(.*\))?$`)
+var releaseCommitRegex = regexp.MustCompile(`^Release (v?)(\d+).(\d+).(\d+)( \(.*\))?$`)
 
-func DetectReleaseCommit(commit string, merge bool) (major, minor, patch int) {
+func DetectReleaseCommit(commit string, merge bool) (vPrefix string, major, minor, patch int) {
 	candidates := []string{strings.SplitN(commit, "\n\n", 2)[0]}
 	if merge {
 		candidates = strings.Split(commit, "\n")
 	}
 	for _, candidate := range candidates {
 		matches := releaseCommitRegex.FindStringSubmatch(candidate)
-		if len(matches) > 0 {
-			major, _ = strconv.Atoi(matches[1])
-			minor, _ = strconv.Atoi(matches[2])
-			patch, _ = strconv.Atoi(matches[3])
+		if matches != nil {
+			vPrefix = matches[1]
+			major, _ = strconv.Atoi(matches[2])
+			minor, _ = strconv.Atoi(matches[3])
+			patch, _ = strconv.Atoi(matches[4])
 			return
 		}
 	}
-	return 0, 0, 0
+	return "v", 0, 0, 0
 }
