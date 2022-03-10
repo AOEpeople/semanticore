@@ -31,7 +31,7 @@ const (
 	TypeOther    CommitType = "other"
 )
 
-var commitRegexp = regexp.MustCompile(`([a-zA-Z]*)\s*([\(\[]([^\]\)]*)[\]\)])?\s*?(!?):?\s*(.*)`)
+var commitRegexp = regexp.MustCompile(`#?\d*\s*\[?([a-zA-Z]*)\]?\s*([\(\[]([^\]\)]*)[\]\)])?\s*?(!?)(:?)\s*(.*)`)
 
 func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	match := commitRegexp.FindStringSubmatch(msg)
@@ -39,10 +39,14 @@ func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	var typ CommitType
 	var major = false
 
-	if len(match) == 6 {
-		commitType, scope, description = strings.ToLower(match[1]), strings.ToLower(match[3]), strings.TrimSpace(match[5])
+	if len(match) == 7 {
+		commitType, scope, description = strings.ToLower(match[1]), strings.ToLower(match[3]), strings.TrimSpace(match[6])
 		if match[4] == "!" {
 			major = true
+		}
+		// if we do not have a `:` after type and category we might have a non-conventional commit
+		if match[5] != ":" {
+			description = msg
 		}
 	}
 	if len(description) == 0 {
@@ -85,6 +89,7 @@ func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	for _, line := range strings.Split(msg, "\n") {
 		if strings.HasPrefix(line, "BREAKING CHANGE:") {
 			major = true
+			break
 		}
 	}
 
