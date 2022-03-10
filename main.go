@@ -53,7 +53,9 @@ func main() {
 	log.Printf("[semanticore] repository: %s at %s", repoId, remoteUrl.Host)
 
 	var backend internal.Backend
-	if remoteUrl.Host == "github.com" {
+	if os.Getenv("SEMANTICORE_TOKEN") == "" {
+		log.Println("[semanticore] SEMANTICORE_TOKEN unset, no commits/changelog will be done")
+	} else if remoteUrl.Host == "github.com" {
 		backend = internal.NewGithubBackend(os.Getenv("SEMANTICORE_TOKEN"), repoId)
 	} else if strings.Contains(remoteUrl.Host, "gitlab") {
 		backend = internal.NewGitlabBackend(os.Getenv("SEMANTICORE_TOKEN"), remoteUrl.Host, repoId)
