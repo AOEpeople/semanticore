@@ -114,8 +114,15 @@ func main() {
 	headCommit, err := repo.CommitObject(head.Hash())
 	try(err)
 
+	var ignore []plumbing.Hash
+	var seen map[plumbing.Hash]bool
+	if ancestor != nil {
+		ignore = append(ignore, ancestor.Hash)
+		seen = map[plumbing.Hash]bool{ancestor.Hash: true}
+	}
+
 	var logs []*object.Commit
-	object.NewCommitIterBSF(headCommit, map[plumbing.Hash]bool{ancestor.Hash: true}, []plumbing.Hash{ancestor.Hash}).ForEach(func(c *object.Commit) error {
+	object.NewCommitIterBSF(headCommit, seen, ignore).ForEach(func(c *object.Commit) error {
 		if a, _ := c.IsAncestor(ancestor); a {
 			return storer.ErrStop
 		}
