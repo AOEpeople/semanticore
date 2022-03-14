@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 0.2.1 (2022-03-14)
+
+### Fixes
+
+- **log:** use BFS with additional ancestor check (33bcfc1a)
+
 ## Version 0.2.0 (2022-03-14)
 
 ### Features
