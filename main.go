@@ -29,8 +29,7 @@ func try(err error) {
 }
 
 var createMajor = flag.Bool("major", false, "release major versions")
-var createTag = flag.Bool("tag", true, "tags on release commits")
-var createRelease = flag.Bool("release", true, "create release alongside tags (requires tag)")
+var createRelease = flag.Bool("release", true, "create release alongside tags")
 var createMergeRequest = flag.Bool("merge-request", true, "create merge release for branch")
 
 func main() {
@@ -146,7 +145,7 @@ func main() {
 			vPrefix = newVprefix
 			latest = fmt.Sprintf("%s%d.%d.%d", vPrefix, major, minor, patch)
 			log.Printf("[semanticore] found version %s at %s: %q", latest, commit.Hash, msg)
-			if backend != nil && (*createTag || *createRelease) {
+			if backend != nil && *createRelease {
 				changelog := ""
 				fi, err := commit.Files()
 				if err == nil {
