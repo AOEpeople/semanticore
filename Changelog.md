@@ -1,5 +1,11 @@
 # Changelog
 
+## Version v0.2.3 (2022-03-14)
+
+### Fixes
+
+- avoid nil pointer for repos without existing tags (59be6d2e)
+
 ## Version v0.2.2 (2022-03-14)
 
 ### Fixes
