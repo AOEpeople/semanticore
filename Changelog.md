@@ -1,5 +1,11 @@
 # Changelog
 
+## Version v0.2.2 (2022-03-14)
+
+### Fixes
+
+- **changelog:** always include vPrefix (a056ad8e)
+
 ## Version 0.2.1 (2022-03-14)
 
 ### Fixes
