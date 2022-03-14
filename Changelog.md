@@ -1,5 +1,27 @@
 # Changelog
 
+## Version 0.2.0 (2022-03-14)
+
+### Features
+
+- **versions:** add -no-v-prefix to remove v on versions (a723f8bc)
+
+### Fixes
+
+- **cli:** remove unused tag flag (a7c61016)
+- **tags:** error in condition (49259f24)
+- **commit message:** parse more exotic commits (ec033bd2)
+- **semanticore:** do not commit without SEMANTICORE_TOKEN (5b8588ae)
+- **commit message:** include semanticore link (e47e6d43)
+
+### Ops and CI/CD
+
+- **semanticore:** do not rely on cached dev versions in CI (2e1163d5)
+
+### Documentation
+
+- **readme:** add table of commit types (2518e4c2)
+
 ## Version v0.1.3 (2022-03-07)
 
 ### Fixes
