@@ -89,7 +89,7 @@ func main() {
 		if tags, ok := tags[c.Hash.String()]; ok {
 			for _, tag := range tags {
 				match := vregex.FindStringSubmatch(tag.Name().String())
-				if match != nil {
+				if match == nil {
 					continue
 				}
 				tagMajor, _ := strconv.Atoi(match[2])
