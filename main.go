@@ -20,6 +20,7 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/plumbing/storer"
 )
 
 func try(err error) {
@@ -83,7 +84,7 @@ func main() {
 	major, minor, patch := 0, 0, 0
 	vPrefix := ""
 	vregex := regexp.MustCompile(`(v?)(\d+).(\d+).(\d+)`)
-	var logs []*object.Commit
+	var ancestor *object.Commit
 	glog.ForEach(func(c *object.Commit) error {
 		if tags, ok := tags[c.Hash.String()]; ok {
 			for _, tag := range tags {
@@ -99,9 +100,24 @@ func main() {
 					minor = tagMinor
 					patch = tagPatch
 					vPrefix = match[1]
+					ancestor = c
 					return errors.New("done")
 				}
 			}
+		}
+		return nil
+	})
+
+	head, err := repo.Head()
+	try(err)
+
+	headCommit, err := repo.CommitObject(head.Hash())
+	try(err)
+
+	var logs []*object.Commit
+	object.NewCommitIterBSF(headCommit, map[plumbing.Hash]bool{ancestor.Hash: true}, []plumbing.Hash{ancestor.Hash}).ForEach(func(c *object.Commit) error {
+		if a, _ := c.IsAncestor(ancestor); a {
+			return storer.ErrStop
 		}
 		logs = append(logs, c)
 		return nil
@@ -282,8 +298,6 @@ func main() {
 	_, err = wt.Add(filename)
 	try(err)
 
-	head, err := repo.Head()
-	try(err)
 	commit, err := wt.Commit(fmt.Sprintf("Release %s%d.%d.%d", vPrefix, major, minor, patch), &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  "Semanticore Bot",
