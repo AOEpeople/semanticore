@@ -1,5 +1,12 @@
 # Changelog
 
+## Version v0.2.4 (2022-03-18)
+
+### Fixes
+
+- **versions:** default use v prefix (b6f5a7d6)
+- **deps:** update module github.com/stretchr/testify to v1.7.1 (74288dfe)
+
 ## Version v0.2.3 (2022-03-14)
 
 ### Fixes
