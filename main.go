@@ -82,7 +82,7 @@ func main() {
 	try(err)
 
 	major, minor, patch := 0, 0, 0
-	vPrefix := ""
+	vPrefix := "v"
 	vregex := regexp.MustCompile(`(v?)(\d+).(\d+).(\d+)`)
 	var ancestor *object.Commit
 	glog.ForEach(func(c *object.Commit) error {
