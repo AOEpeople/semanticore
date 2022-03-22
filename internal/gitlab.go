@@ -66,7 +66,7 @@ func (gitlab Gitlab) findOpenMergeRequest() (int, error) {
 		State        string `json:"state"`
 	}
 
-	if err := gitlab.request(http.MethodGet, fmt.Sprintf("projects/%s/merge_requests", url.PathEscape(gitlab.repo)), http.StatusOK, nil, &mrs); err != nil {
+	if err := gitlab.request(http.MethodGet, fmt.Sprintf("projects/%s/merge_requests?state=opened&source_branch=semanticore%2frelease", url.PathEscape(gitlab.repo)), http.StatusOK, nil, &mrs); err != nil {
 		return 0, fmt.Errorf("unable to get merge requests: %w", err)
 	}
 
