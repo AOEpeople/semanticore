@@ -1,5 +1,12 @@
 # Changelog
 
+## Version v0.2.5 (2022-03-22)
+
+### Fixes
+
+- **gitlab:** search only for release branch in mr (a749aa6e)
+- **gitlab:** search only for release branch in mr (49ccf332)
+
 ## Version v0.2.4 (2022-03-18)
 
 ### Fixes
