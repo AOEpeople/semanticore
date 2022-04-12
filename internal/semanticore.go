@@ -32,6 +32,7 @@ const (
 )
 
 var commitRegexp = regexp.MustCompile(`#?\d*\s*\[?([a-zA-Z]*)\]?\s*([\(\[]([^\]\)]*)[\]\)])?\s*?(!?)(:?)\s*(.*)`)
+var specialChars = strings.NewReplacer("<", "&lt;", ">", "&gt;", "&", "&amp;")
 
 func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	match := commitRegexp.FindStringSubmatch(msg)
@@ -92,6 +93,9 @@ func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 			break
 		}
 	}
+
+	scope = specialChars.Replace(scope)
+	commitDescription = specialChars.Replace(commitDescription)
 
 	return typ, scope, commitDescription, major
 }

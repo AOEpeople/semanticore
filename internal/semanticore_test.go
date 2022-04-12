@@ -55,6 +55,8 @@ func TestParseCommit(t *testing.T) {
 		{"testing:\n\ttest\nBREAKING CHANGE: major commit", TypeTest, ``, `test`, true},
 		{"testing!:\n\ttest\n", TypeTest, ``, `test`, true},
 		{"testing(scope)!:\n\ttest\n", TypeTest, `scope`, `test`, true},
+		// special chars
+		{"test(<&>): fix <foo> & bar tags", TypeTest, `&lt;&amp;&gt;`, `fix &lt;foo&gt; &amp; bar tags`, false},
 	}
 
 	for _, c := range cases {
