@@ -1,5 +1,11 @@
 # Changelog
 
+## Version v0.2.6 (2022-04-12)
+
+### Fixes
+
+- **changelog:** special character encoding (6d9b377b)
+
 ## Version v0.2.5 (2022-03-22)
 
 ### Fixes
