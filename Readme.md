@@ -102,3 +102,5 @@ semanticore:
   only:
     - main
 ```
+
+Make sure you set the repositories clone depth too a large enough value, the default of `50` might be too low.

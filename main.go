@@ -54,7 +54,7 @@ func main() {
 
 	var backend internal.Backend
 	if os.Getenv("SEMANTICORE_TOKEN") == "" {
-		log.Println("[semanticore] SEMANTICORE_TOKEN unset, no commits/changelog will be done")
+		log.Println("[semanticore] SEMANTICORE_TOKEN unset, no merge requests will be handled")
 	} else if remoteUrl.Host == "github.com" {
 		backend = internal.NewGithubBackend(os.Getenv("SEMANTICORE_TOKEN"), repoId)
 	} else if strings.Contains(remoteUrl.Host, "gitlab") {
@@ -295,10 +295,12 @@ func main() {
 	}
 
 	cl, _ := ioutil.ReadFile(filepath.Join(filename))
-	if !strings.Contains(string(cl), "# Changelog") {
-		cl = append([]byte(changelog), cl...)
-	} else {
+	if strings.Contains(string(cl), "# Changelog\n\n") {
 		cl = bytes.Replace(cl, []byte("# Changelog\n\n"), []byte(changelog), 1)
+	} else if strings.Contains(string(cl), "# Changelog\n") {
+		cl = bytes.Replace(cl, []byte("# Changelog\n"), []byte(changelog), 1)
+	} else {
+		cl = append([]byte(changelog), cl...)
 	}
 	try(ioutil.WriteFile(filepath.Join(filename), cl, 0644))
 
@@ -348,6 +350,8 @@ func main() {
 There are %s commits since %s.
 
 This is a %s release.
+
+Merge this pull request to commit the changelog and have Semanticore create a new release on the next pipeline run.
 
 %s
 
