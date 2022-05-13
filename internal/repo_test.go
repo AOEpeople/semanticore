@@ -64,6 +64,7 @@ func TestReadReposito(t *testing.T) {
 	repository, err = ReadRepository(mockRepo, true)
 	assert.NoError(t, err)
 	assert.Equal(t, "v0.0.2", repository.Latest)
+	assert.Equal(t, "", repository.changelog)
 
 	vhash = testCommit("Release v0.0.3")
 	repository, err = ReadRepository(mockRepo, true)

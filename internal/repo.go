@@ -129,6 +129,7 @@ func ReadRepository(repo *git.Repository, createMajor bool) (*Repository, error)
 	_ = reverst
 
 	reverted := make(map[string]struct{})
+	updates := 0
 
 	for _, commit := range logs {
 		if _, ok := reverted[commit.Hash.String()]; ok {
@@ -200,6 +201,11 @@ func ReadRepository(repo *git.Repository, createMajor bool) (*Repository, error)
 		default:
 			repository.other = append(repository.other, line)
 		}
+		updates++
+	}
+
+	if updates == 0 {
+		return repository, nil
 	}
 
 	if repository.Breaking && createMajor {
