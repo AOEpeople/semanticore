@@ -1,5 +1,11 @@
 # Changelog
 
+## Version v0.3.1 (2022-05-13)
+
+### Fixes
+
+- **changelog:** do not generate empty changelogs (03a5acc3)
+
 ## Version v0.3.0 (2022-05-13)
 
 ### Features
