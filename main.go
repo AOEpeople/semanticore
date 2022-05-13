@@ -69,6 +69,11 @@ func main() {
 
 	changelog := repository.Changelog()
 
+	if changelog == "" {
+		log.Println("no changes detected, exiting...")
+		return
+	}
+
 	fmt.Println(changelog)
 
 	if !*createMergeRequest {
