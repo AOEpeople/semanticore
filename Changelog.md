@@ -1,5 +1,20 @@
 # Changelog
 
+## Version v0.3.0 (2022-05-13)
+
+### Features
+
+- **npm:** update version field in package.json (88dcf46c)
+
+### Fixes
+
+- **cli:** keep local commit (a510b6c2)
+
+### Refactoring
+
+- **semanticore:** move code to internal and add tests (b729eae9)
+- **semanticore:** smaller code adoptions (0d37b5dc)
+
 ## Version v0.2.6 (2022-04-12)
 
 ### Fixes
