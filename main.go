@@ -71,7 +71,7 @@ func main() {
 
 	fmt.Println(changelog)
 
-	if backend == nil || !*createMergeRequest {
+	if !*createMergeRequest {
 		return
 	}
 
@@ -125,6 +125,10 @@ func main() {
 		Mode:   git.HardReset,
 	}))
 
+	if backend == nil {
+		log.Printf("no backend configured, keeping changes in a local commit: %s", commit.String())
+		return
+	}
 	try(repo.Push(&git.PushOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{config.RefSpec(commit.String() + ":refs/heads/semanticore/release")},
