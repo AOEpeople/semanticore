@@ -151,14 +151,13 @@ func ReadRepository(repo *git.Repository, createMajor bool) (*Repository, error)
 
 			repository.unreleased = commit.Hash.String()
 
-			changelog := ""
 			fi, err := commit.Files()
 			if err == nil {
 				fi.ForEach(func(f *object.File) error {
 					if strings.ToLower(f.Name) == "changelog.md" {
 						c, _ := f.Contents()
 						repository.unreleasedChangelog = "## Version " + strings.Split(c, "## Version ")[1]
-						repository.unreleasedChangelog = strings.TrimSpace(changelog)
+						repository.unreleasedChangelog = strings.TrimSpace(repository.unreleasedChangelog)
 					}
 					return nil
 				})
