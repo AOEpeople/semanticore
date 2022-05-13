@@ -258,3 +258,7 @@ func (repository *Repository) Release(backend Backend) error {
 func (repository *Repository) Changelog() string {
 	return repository.changelog
 }
+
+func (repository *Repository) Version() string {
+	return fmt.Sprintf("%s%d.%d.%d", repository.VPrefix, repository.Major, repository.Minor, repository.Patch)
+}

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/aoepeople/semanticore/internal"
+	"github.com/aoepeople/semanticore/internal/hook"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -100,6 +101,8 @@ func main() {
 
 	_, err = wt.Add(filename)
 	try(err)
+
+	hook.NpmUpdateVersionHook(wt, repository)
 
 	commit, err := wt.Commit(fmt.Sprintf("Release %s%d.%d.%d", repository.VPrefix, repository.Major, repository.Minor, repository.Patch), &git.CommitOptions{
 		Author: &object.Signature{

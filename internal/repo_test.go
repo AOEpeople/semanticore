@@ -57,6 +57,7 @@ func TestReadReposito(t *testing.T) {
 	repository, err = ReadRepository(mockRepo, true)
 	assert.NoError(t, err)
 	assert.Equal(t, "v0.0.1", repository.Latest)
+	assert.Equal(t, "", repository.unreleased)
 
 	vhash = testCommit("ci(semanticore): initial ci")
 	mockRepo.CreateTag("v0.0.2", vhash, &git.CreateTagOptions{Message: "v0.0.2"})
@@ -100,8 +101,15 @@ func TestReadReposito(t *testing.T) {
 
 	testCommit("feat(semanticore): second feature")
 
-	testCommit("fix(semanticore): initial fix")
+	repository, err = ReadRepository(mockRepo, true)
+	assert.NoError(t, err)
+	assert.Len(t, repository.tests, 1)
+	assert.Len(t, repository.ops, 1)
+	assert.Equal(t, 0, repository.Major)
+	assert.Equal(t, 1, repository.Minor)
+	assert.Equal(t, 0, repository.Patch)
 
+	testCommit("fix(semanticore): initial fix")
 	testCommit("fix(semanticore): second fix")
 
 	testCommit("fix(semanticore)!: final fix")
@@ -110,7 +118,17 @@ func TestReadReposito(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, repository.tests, 1)
 	assert.Len(t, repository.ops, 1)
+	assert.Len(t, repository.fixes, 3)
 	assert.Equal(t, 1, repository.Major)
 	assert.Equal(t, 0, repository.Minor)
+	assert.Equal(t, 0, repository.Patch)
+
+	repository, err = ReadRepository(mockRepo, false)
+	assert.NoError(t, err)
+	assert.Len(t, repository.tests, 1)
+	assert.Len(t, repository.ops, 1)
+	assert.Len(t, repository.fixes, 3)
+	assert.Equal(t, 0, repository.Major)
+	assert.Equal(t, 1, repository.Minor)
 	assert.Equal(t, 0, repository.Patch)
 }
