@@ -11,7 +11,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReadReposito(t *testing.T) {
+type testBackend struct {
+	tag       string
+	ref       string
+	changelog string
+}
+
+func (*testBackend) String() string { return "testBackend" }
+func (*testBackend) Name() string   { return "testBackend" }
+func (b *testBackend) Release(tag, ref, changelog string) error {
+	b.tag = tag
+	b.ref = ref
+	b.changelog = changelog
+	return nil
+}
+func (*testBackend) MergeRequest(target, title, description, labels string) error { return nil }
+func (*testBackend) CloseMergeRequest() error                                     { return nil }
+func (*testBackend) MainBranch() (string, error)                                  { return "main", nil }
+
+func TestReadRepository(t *testing.T) {
 	mockRepo, err := git.Init(memory.NewStorage(), memfs.New())
 	assert.NoError(t, err)
 
@@ -66,11 +84,20 @@ func TestReadReposito(t *testing.T) {
 	assert.Equal(t, "v0.0.2", repository.Latest)
 	assert.Equal(t, "", repository.changelog)
 
+	cf, err := mockWt.Filesystem.Create("Changelog.md")
+	assert.NoError(t, err)
+	defer cf.Close()
+	cf.Write([]byte(`## Version 1.2.3 test ## Version 1.2.3 ## Version 1.2.3`))
+	mockWt.Add("Changelog.md")
 	vhash = testCommit("Release v0.0.3")
 	repository, err = ReadRepository(mockRepo, true)
 	assert.NoError(t, err)
 	assert.Equal(t, "v0.0.3", repository.Latest)
 	assert.Equal(t, vhash.String(), repository.unreleased)
+	assert.Equal(t, "## Version 1.2.3 test", repository.unreleasedChangelog)
+	testBackend := new(testBackend)
+	assert.NoError(t, repository.Release(testBackend))
+	assert.Equal(t, "## Version 1.2.3 test", testBackend.changelog)
 
 	testCommit("ci(semanticore): next ci")
 	testCommit("test(semanticore): next test")
