@@ -1,5 +1,15 @@
 # Changelog
 
+## Version v0.3.2 (2022-05-17)
+
+### Fixes
+
+- **release:** include changelog in release notes (721da6d2)
+
+### Tests
+
+- **release:** unit test release process (178a336d)
+
 ## Version v0.3.1 (2022-05-13)
 
 ### Fixes
