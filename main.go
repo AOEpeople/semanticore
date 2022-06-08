@@ -25,6 +25,7 @@ func try(err error) {
 	}
 }
 
+var useBackend = flag.String("backend", os.Getenv("SEMANTICORE_BACKEND"), "configure backend use either \"github\" or \"gitlab\" - we'll try to autodetect if empty")
 var createMajor = flag.Bool("major", false, "release major versions")
 var createRelease = flag.Bool("release", true, "create release alongside tags")
 var createMergeRequest = flag.Bool("merge-request", true, "create merge release for branch")
@@ -51,9 +52,9 @@ func main() {
 	var backend internal.Backend
 	if os.Getenv("SEMANTICORE_TOKEN") == "" {
 		log.Println("[semanticore] SEMANTICORE_TOKEN unset, no merge requests will be handled")
-	} else if remoteUrl.Host == "github.com" {
+	} else if *useBackend == "github" || remoteUrl.Host == "github.com" {
 		backend = internal.NewGithubBackend(os.Getenv("SEMANTICORE_TOKEN"), repoId)
-	} else if strings.Contains(remoteUrl.Host, "gitlab") {
+	} else if *useBackend == "gitlab" || strings.Contains(remoteUrl.Host, "gitlab") {
 		backend = internal.NewGitlabBackend(os.Getenv("SEMANTICORE_TOKEN"), remoteUrl.Host, repoId)
 	}
 
