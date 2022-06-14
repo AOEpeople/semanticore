@@ -1,5 +1,15 @@
 # Changelog
 
+## Version v0.4.0 (2022-06-14)
+
+### Features
+
+- **cli:** add backend flag to allow configuration if autodetection doesn't work (ada14bf7)
+
+### Fixes
+
+- **deps:** update module github.com/stretchr/testify to v1.7.2 (67a18a1c)
+
 ## Version v0.3.2 (2022-05-17)
 
 ### Fixes
