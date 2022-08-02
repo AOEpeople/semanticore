@@ -1,6 +1,6 @@
 module github.com/aoepeople/semanticore
 
-go 1.17
+go 1.19
 
 require (
 	github.com/go-git/go-git/v5 v5.4.3-0.20211028194832-617ae9f34f46
