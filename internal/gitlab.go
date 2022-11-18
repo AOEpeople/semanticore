@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -44,7 +43,7 @@ func (gitlab Gitlab) request(method, endpoint string, expectedStatus int, body i
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != expectedStatus {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("expected status is %d: %v %s", expectedStatus, resp, string(b))
 	}
 	if target == nil {

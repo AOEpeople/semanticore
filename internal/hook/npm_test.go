@@ -2,16 +2,17 @@ package hook
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"testing"
 
-	"github.com/aoepeople/semanticore/internal"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/aoepeople/semanticore/internal"
 )
 
 func TestNpmUpdateVersionHook(t *testing.T) {
@@ -63,7 +64,7 @@ func TestNpmUpdateVersionHook(t *testing.T) {
 
 	packagejson, err = mockWt.Filesystem.Open("package.json")
 	assert.NoError(t, err)
-	b, _ := ioutil.ReadAll(packagejson)
+	b, _ := io.ReadAll(packagejson)
 	var jsonData struct {
 		Version      string `json:"version"`
 		Dependencies struct {

@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"regexp"
 
-	"github.com/aoepeople/semanticore/internal"
 	"github.com/go-git/go-git/v5"
+
+	"github.com/aoepeople/semanticore/internal"
 )
 
 var packagejson string
@@ -30,7 +31,7 @@ func NpmUpdateVersionHook(wt *git.Worktree, repository *internal.Repository) {
 	}
 	defer f.Close()
 
-	contents, err := ioutil.ReadAll(f)
+	contents, err := io.ReadAll(f)
 	if err != nil {
 		log.Printf("npm-update-version: error reading file: %s", err)
 		return
