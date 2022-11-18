@@ -44,6 +44,19 @@ To enable support for major releases (breaking APIs), use the `-major` flag.
 
 The `SEMANTICORE_TOKEN` is required - that's a Gitlab or Github Token which has basic contributor rights and allows to perform the related Git and API operations.
 
+### Set Author and committer
+
+Semanticore respects [Git Environment variables](https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables)
+
+* `GIT_AUTHOR_NAME`
+* `GIT_AUTHOR_EMAIL`
+* `GIT_COMMITTER_NAME`
+* `GIT_COMMITTER_EMAIL`
+
+The values can also be overridden by adding the appropriate flags. Run with `-help` to get the details.
+
+If none of these is set, Semanticore will use `Semanticore Bot` as name and `semanticore@aoe.com` as E-Mail for Author and Committer.
+
 ## Using Semanticore
 
 To test Semanticore locally you can run it without an API token to create an example Changelog:
