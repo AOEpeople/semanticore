@@ -1,5 +1,21 @@
 # Changelog
 
+## Version v0.5.0 (2022-11-21)
+
+### Features
+
+- Allow to configure committer mail and name (ea4ab630)
+
+### Fixes
+
+- **deps:** update module github.com/stretchr/testify to v1.8.1 (aa5d09a1)
+- **deps:** update module github.com/stretchr/testify to v1.8.0 (9f545314)
+
+### Chores and tidying
+
+- **deps:** update module go to 1.19 (c9530fde)
+- **deps:** update irongut/codecoveragesummary action to v1.3.0 (481e6255)
+
 ## Version v0.4.0 (2022-06-14)
 
 ### Features
