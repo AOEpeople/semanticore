@@ -181,5 +181,6 @@ func emptyFallback(s, fallback string) string {
 	if s == "" {
 		return fallback
 	}
-	return ""
+
+	return s
 }
