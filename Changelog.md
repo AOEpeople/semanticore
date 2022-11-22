@@ -1,5 +1,11 @@
 # Changelog
 
+## Version v0.5.1 (2022-11-22)
+
+### Fixes
+
+- let fallback helper return the actual value (d3528fcb)
+
 ## Version v0.5.0 (2022-11-21)
 
 ### Features
