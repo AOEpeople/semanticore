@@ -80,9 +80,6 @@ on:
 jobs:
   semanticore:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go: [ '1.*' ]
     name: Semanticore
     steps:
       - uses: actions/checkout@v3
@@ -91,7 +88,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
-          go-version: ${{ matrix.go }}
+          go-version: '1.*'
       - name: Semanticore
         run: go run github.com/aoepeople/semanticore@v0
         env:
