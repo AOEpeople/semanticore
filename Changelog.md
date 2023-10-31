@@ -1,5 +1,25 @@
 # Changelog
 
+## Version v0.5.2 (2023-10-31)
+
+### Fixes
+
+- **deps:** update module github.com/go-git/go-git/v5 to v5.10.0 (#66) (9d5cfbda)
+- **deps:** update module github.com/go-git/go-git/v5 to v5.9.0 (d6b928de)
+- **deps:** update module github.com/go-git/go-billy/v5 to v5.5.0 (21ad20a4)
+- **deps:** update module github.com/stretchr/testify to v1.8.4 (#62) (d19b7fc4)
+- **deps:** update module github.com/go-git/go-git/v5 to v5.5.2 (701140f0)
+- **deps:** update module github.com/go-git/go-git/v5 to v5.5.0 (cfd9217e)
+
+### Ops and CI/CD
+
+- **github:** remove matrix strategy (3fbb0b15)
+
+### Chores and tidying
+
+- **deps:** update actions/checkout action to v4 (108a7c2f)
+- **deps:** update actions/setup-go action to v4 (d0777ccd)
+
 ## Version v0.5.1 (2022-11-22)
 
 ### Fixes
