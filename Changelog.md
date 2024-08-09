@@ -1,5 +1,16 @@
 # Changelog
 
+## Version v0.5.3 (2024-08-09)
+
+### Fixes
+
+- **deps:** update module github.com/go-git/go-git/v5 to v5.12.0 (#67) (1997f732)
+- **deps:** update module github.com/stretchr/testify to v1.9.0 (#70) (4d23fe38)
+
+### Chores and tidying
+
+- **deps:** update actions/setup-go action to v5 (#69) (5cd58d42)
+
 ## Version v0.5.2 (2023-10-31)
 
 ### Fixes
