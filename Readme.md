@@ -93,6 +93,7 @@ jobs:
         run: go run github.com/aoepeople/semanticore@v0
         env:
           SEMANTICORE_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GOTOOLCHAIN: auto
 ```
 
 #### Gitlab CI
@@ -107,6 +108,8 @@ stages:
 semanticore:
   image: golang:1
   stage: semanticore
+  variables:
+    GOTOOLCHAIN: auto
   script:
     - go run github.com/aoepeople/semanticore@v0
   only:
