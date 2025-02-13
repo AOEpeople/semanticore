@@ -17,6 +17,7 @@ jobs:
         with:
           go-version: '1.*'
       - name: Semanticore
-        run: go run .
+        run: go run . -changelog-max-lines 100
         env:
           SEMANTICORE_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GOTOOLCHAIN: auto
