@@ -25,14 +25,17 @@ func try(err error) {
 	}
 }
 
-var useBackend = flag.String("backend", os.Getenv("SEMANTICORE_BACKEND"), "configure backend use either \"github\" or \"gitlab\" - we'll try to autodetect if empty")
-var createMajor = flag.Bool("major", false, "release major versions")
-var createRelease = flag.Bool("release", true, "create release alongside tags")
-var createMergeRequest = flag.Bool("merge-request", true, "create merge release for branch")
-var authorName = flag.String("git-author-name", emptyFallback(os.Getenv("GIT_AUTHOR_NAME"), "Semanticore Bot"), "author name for the git commits, falls back to env var GIT_AUTHOR_NAME and afterwards to \"Semanticore Bot\"")
-var authorEmail = flag.String("git-author-email", emptyFallback(os.Getenv("GIT_AUTHOR_EMAIL"), "semanticore@aoe.com"), "author email for the git commits, falls back to env var GIT_AUTHOR_EMAIL and afterwards to \"semanticore@aoe.com\"")
-var committerName = flag.String("git-committer-name", emptyFallback(os.Getenv("GIT_COMMITTER_NAME"), "Semanticore Bot"), "committer name for the git commits, falls back to env var GIT_COMMITTER_NAME and afterwards to \"Semanticore Bot\"")
-var committerEmail = flag.String("git-committer-email", emptyFallback(os.Getenv("GIT_COMMITTER_EMAIL"), "semanticore@aoe.com"), "committer email for the git commits, falls back to env var GIT_COMMITTER_EMAIL and afterwards to \"semanticore@aoe.com\"")
+var (
+	useBackend         = flag.String("backend", os.Getenv("SEMANTICORE_BACKEND"), "configure backend use either \"github\" or \"gitlab\" - we'll try to autodetect if empty")
+	createMajor        = flag.Bool("major", false, "release major versions")
+	createRelease      = flag.Bool("release", true, "create release alongside tags")
+	createMergeRequest = flag.Bool("merge-request", true, "create merge release for branch")
+	authorName         = flag.String("git-author-name", emptyFallback(os.Getenv("GIT_AUTHOR_NAME"), "Semanticore Bot"), "author name for the git commits, falls back to env var GIT_AUTHOR_NAME and afterwards to \"Semanticore Bot\"")
+	authorEmail        = flag.String("git-author-email", emptyFallback(os.Getenv("GIT_AUTHOR_EMAIL"), "semanticore@aoe.com"), "author email for the git commits, falls back to env var GIT_AUTHOR_EMAIL and afterwards to \"semanticore@aoe.com\"")
+	committerName      = flag.String("git-committer-name", emptyFallback(os.Getenv("GIT_COMMITTER_NAME"), "Semanticore Bot"), "committer name for the git commits, falls back to env var GIT_COMMITTER_NAME and afterwards to \"Semanticore Bot\"")
+	committerEmail     = flag.String("git-committer-email", emptyFallback(os.Getenv("GIT_COMMITTER_EMAIL"), "semanticore@aoe.com"), "committer email for the git commits, falls back to env var GIT_COMMITTER_EMAIL and afterwards to \"semanticore@aoe.com\"")
+	changelogMaxLines  = flag.Int("changelog-max-lines", 0, "trim the changelog to the last version including the maximum configured lines")
+)
 
 func main() {
 	flag.Parse()
@@ -100,6 +103,11 @@ func main() {
 	}
 
 	cl, _ := os.ReadFile(filepath.Join(filename))
+
+	if *changelogMaxLines > 0 {
+		cl = internal.TrimChangelog(cl, *changelogMaxLines)
+	}
+
 	if strings.Contains(string(cl), "# Changelog\n\n") {
 		cl = bytes.Replace(cl, []byte("# Changelog\n\n"), []byte(changelog), 1)
 	} else if strings.Contains(string(cl), "# Changelog\n") {
