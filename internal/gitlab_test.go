@@ -35,7 +35,7 @@ func TestGitlab(t *testing.T) {
 	assert.Error(t, gitlab.request(http.MethodGet, "brokenbody", http.StatusOK, nil, &body))
 
 	noMrs := true
-	testmux.HandleFunc("/api/v4/projects/my/test/repo/merge_requests", func(w http.ResponseWriter, r *http.Request) {
+	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo/merge_requests", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusCreated)
 			return
@@ -61,22 +61,22 @@ func TestGitlab(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 3, num)
 
-	testmux.HandleFunc("/api/v4/projects/my/test/repo/merge_requests/3", func(w http.ResponseWriter, r *http.Request) {})
+	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo/merge_requests/3", func(w http.ResponseWriter, r *http.Request) {})
 	assert.NoError(t, gitlab.CloseMergeRequest())
 
 	assert.NoError(t, gitlab.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2"))
 	noMrs = true
 	assert.NoError(t, gitlab.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2"))
 
-	testmux.HandleFunc("/api/v4/projects/my/test/repo/repository/tags", func(w http.ResponseWriter, r *http.Request) {
+	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo/repository/tags", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	})
-	testmux.HandleFunc("/api/v4/projects/my/test/repo/releases", func(w http.ResponseWriter, r *http.Request) {
+	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo/releases", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 	})
 	assert.NoError(t, gitlab.Release("v1.2.3", "abc123", "changelog"))
 
-	testmux.HandleFunc("/api/v4/projects/my/test/repo", func(w http.ResponseWriter, r *http.Request) {
+	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, `{"default_branch": "main"}`)
 	})
 	branch, err := gitlab.MainBranch()
