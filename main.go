@@ -35,6 +35,7 @@ var (
 	committerName      = flag.String("git-committer-name", emptyFallback(os.Getenv("GIT_COMMITTER_NAME"), "Semanticore Bot"), "committer name for the git commits, falls back to env var GIT_COMMITTER_NAME and afterwards to \"Semanticore Bot\"")
 	committerEmail     = flag.String("git-committer-email", emptyFallback(os.Getenv("GIT_COMMITTER_EMAIL"), "semanticore@aoe.com"), "committer email for the git commits, falls back to env var GIT_COMMITTER_EMAIL and afterwards to \"semanticore@aoe.com\"")
 	changelogMaxLines  = flag.Int("changelog-max-lines", 0, "trim the changelog to the last version including the maximum configured lines")
+	signKeyFilePath    = flag.String("sign-key-file", emptyFallback(os.Getenv("SEMANTICORE_SIGN_KEY_FILE"), ""), "path to GPG private key file for signing commits")
 )
 
 func main() {
@@ -122,7 +123,10 @@ func main() {
 
 	hook.NpmUpdateVersionHook(wt, repository)
 
-	commit, err := wt.Commit(fmt.Sprintf("Release %s%d.%d.%d", repository.VPrefix, repository.Major, repository.Minor, repository.Patch), &git.CommitOptions{
+	signKey, err := internal.TryCreateSignKey(signKeyFilePath)
+	try(err)
+
+	commitOptions := &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  *authorName,
 			Email: *authorEmail,
@@ -133,7 +137,10 @@ func main() {
 			Email: *committerEmail,
 			When:  time.Now(),
 		},
-	})
+		SignKey: signKey,
+	}
+
+	commit, err := wt.Commit(fmt.Sprintf("Release %s%d.%d.%d", repository.VPrefix, repository.Major, repository.Minor, repository.Patch), commitOptions)
 	try(err)
 
 	log.Printf("[semanticore] committed changelog: %s", commit.String())
