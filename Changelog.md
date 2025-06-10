@@ -1,5 +1,15 @@
 # Changelog
 
+## Version v0.7.0 (2025-06-10)
+
+### Features
+
+- Support signing of commits (#80) (bbcf93ec)
+
+### Fixes
+
+- **deps:** update module github.com/go-git/go-git/v5 to v5.16.2 (#77) (bfcea1b3)
+
 ## Version v0.6.0 (2025-02-13)
 
 ### Features
@@ -88,31 +98,3 @@
 ### Fixes
 
 - **changelog:** do not generate empty changelogs (03a5acc3)
-
-## Version v0.3.0 (2022-05-13)
-
-### Features
-
-- **npm:** update version field in package.json (88dcf46c)
-
-### Fixes
-
-- **cli:** keep local commit (a510b6c2)
-
-### Refactoring
-
-- **semanticore:** move code to internal and add tests (b729eae9)
-- **semanticore:** smaller code adoptions (0d37b5dc)
-
-## Version v0.2.6 (2022-04-12)
-
-### Fixes
-
-- **changelog:** special character encoding (6d9b377b)
-
-## Version v0.2.5 (2022-03-22)
-
-### Fixes
-
-- **gitlab:** search only for release branch in mr (a749aa6e)
-- **gitlab:** search only for release branch in mr (49ccf332)
