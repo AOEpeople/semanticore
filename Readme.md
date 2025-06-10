@@ -44,6 +44,17 @@ To enable support for major releases (breaking APIs), use the `-major` flag.
 
 The `SEMANTICORE_TOKEN` is required - that's a Gitlab or Github Token which has basic contributor rights and allows to perform the related Git and API operations.
 
+### Sign Key Configuration
+
+To enable GPG signing of commits, you have two options:
+
+- Use `SEMANTICORE_SIGN_KEY` environment variable containing the actual GPG private key
+- Use `SEMANTICORE_SIGN_KEY_FILE` environment variable or the command line option `-sign-key-file`
+  specifying the path to a file containing the
+  GPG private key
+
+If neither is provided, commits will not be signed.
+
 ### Set Author and committer
 
 Semanticore respects [Git Environment variables](https://git-scm.com/book/en/v2/Git-Internals-Environment-Variables)
