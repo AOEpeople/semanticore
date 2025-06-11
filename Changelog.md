@@ -1,5 +1,11 @@
 # Changelog
 
+## Version v0.7.1 (2025-06-11)
+
+### Fixes
+
+- message on missing sign key (#83) (14c00684)
+
 ## Version v0.7.0 (2025-06-10)
 
 ### Features
@@ -92,9 +98,3 @@
 ### Tests
 
 - **release:** unit test release process (178a336d)
-
-## Version v0.3.1 (2022-05-13)
-
-### Fixes
-
-- **changelog:** do not generate empty changelogs (03a5acc3)
