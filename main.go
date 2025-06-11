@@ -126,7 +126,7 @@ func main() {
 
 	signKey, err := internal.TryCreateSignKey(signKeyFilePath)
 	if errors.Is(err, internal.ErrNoSigningKeyFound) {
-		log.Printf("[semanticore] no signing key found, skipping commit")
+		log.Printf("[semanticore] no signing key found, commit will not be signed")
 	} else if err != nil {
 		try(err)
 	}
