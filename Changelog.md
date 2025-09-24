@@ -1,5 +1,22 @@
 # Changelog
 
+## Version v0.8.0 (2025-09-24)
+
+### Features
+
+- allow configuration of changelog file, enhance readme (#88) (0b06edd6)
+
+### Fixes
+
+- **deps:** update module github.com/protonmail/go-crypto to v1.3.0 (#82) (6c49bf8e)
+- **deps:** update module github.com/stretchr/testify to v1.11.1 (#86) (568c7d83)
+
+### Chores and tidying
+
+- **deps:** update actions/setup-go action to v6 (#87) (4dca4839)
+- **deps:** update actions/checkout action to v5 (#85) (7ece5c45)
+- **config:** migrate config renovate.json (#90) (bdf0c237)
+
 ## Version v0.7.1 (2025-06-11)
 
 ### Fixes
@@ -88,13 +105,3 @@
 ### Fixes
 
 - **deps:** update module github.com/stretchr/testify to v1.7.2 (67a18a1c)
-
-## Version v0.3.2 (2022-05-17)
-
-### Fixes
-
-- **release:** include changelog in release notes (721da6d2)
-
-### Tests
-
-- **release:** unit test release process (178a336d)
