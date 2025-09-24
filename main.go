@@ -36,6 +36,7 @@ var (
 	committerName      = flag.String("git-committer-name", emptyFallback(os.Getenv("GIT_COMMITTER_NAME"), "Semanticore Bot"), "committer name for the git commits, falls back to env var GIT_COMMITTER_NAME and afterwards to \"Semanticore Bot\"")
 	committerEmail     = flag.String("git-committer-email", emptyFallback(os.Getenv("GIT_COMMITTER_EMAIL"), "semanticore@aoe.com"), "committer email for the git commits, falls back to env var GIT_COMMITTER_EMAIL and afterwards to \"semanticore@aoe.com\"")
 	changelogMaxLines  = flag.Int("changelog-max-lines", 0, "trim the changelog to the last version including the maximum configured lines")
+	changelogFileName  = flag.String("changelog-file-name", emptyFallback(os.Getenv("CHANGELOG_FILE_NAME"), "Changelog.md"), "filename for changelog, falls back to env var CHANGELOG_FILE_NAME and afterwards to \"Changelog.md\"")
 	signKeyFilePath    = flag.String("sign-key-file", emptyFallback(os.Getenv("SEMANTICORE_SIGN_KEY_FILE"), ""), "path to GPG private key file for signing commits")
 )
 
@@ -93,13 +94,13 @@ func main() {
 	wt, err := repo.Worktree()
 	try(err)
 
-	filename := "Changelog.md"
+	filename := *changelogFileName
 	files, err := wt.Filesystem.ReadDir(".")
 	try(err)
 
 	// detect case-sensitive filenames
 	for _, f := range files {
-		if !f.IsDir() && strings.ToLower(f.Name()) == "changelog.md" {
+		if !f.IsDir() && strings.ToLower(f.Name()) == strings.ToLower(filename) {
 			filename = f.Name()
 		}
 	}

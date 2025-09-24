@@ -68,6 +68,11 @@ The values can also be overridden by adding the appropriate flags. Run with `-he
 
 If none of these is set, Semanticore will use `Semanticore Bot` as name and `semanticore@aoe.com` as E-Mail for Author and Committer.
 
+### Configure filename of changelog
+
+To configure the name of the changelog file, you can use the `CHANGELOG_FILE_NAME`. environment variable. If this variable is not set,
+the default value `CHANGELOG.md` will be used.
+
 ## Using Semanticore
 
 To test Semanticore locally you can run it without an API token to create an example Changelog:
