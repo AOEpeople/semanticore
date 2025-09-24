@@ -6,7 +6,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.6
 	github.com/go-git/go-billy/v5 v5.6.2
 	github.com/go-git/go-git/v5 v5.16.2
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
