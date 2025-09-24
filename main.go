@@ -100,7 +100,7 @@ func main() {
 
 	// detect case-sensitive filenames
 	for _, f := range files {
-		if !f.IsDir() && strings.ToLower(f.Name()) == strings.ToLower(filename) {
+		if !f.IsDir() && strings.EqualFold(f.Name(), filename) {
 			filename = f.Name()
 		}
 	}
