@@ -71,7 +71,7 @@ If none of these is set, Semanticore will use `Semanticore Bot` as name and `sem
 ### Configure filename of changelog
 
 To configure the name of the changelog file, you can use the `CHANGELOG_FILE_NAME`. environment variable. If this variable is not set,
-the default value `CHANGELOG.md` will be used.
+the default value `Changelog.md` will be used.
 
 ## Using Semanticore
 
