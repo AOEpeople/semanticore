@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Tests
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Static checks
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
