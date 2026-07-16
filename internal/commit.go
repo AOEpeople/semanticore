@@ -24,6 +24,25 @@ const (
 var commitRegexp = regexp.MustCompile(`#?\d*\s*\[?([a-zA-Z]*)\]?\s*([\(\[]([^\]\)]*)[\]\)])?\s*?(!?)(:?)\s*(.*)`)
 var specialChars = strings.NewReplacer("<", "&lt;", ">", "&gt;", "&", "&amp;")
 
+func ExtractPrefixedLabels(msg, prefix string) []string {
+	if prefix == "" {
+		return nil
+	}
+
+	matcher := regexp.MustCompile(regexp.QuoteMeta(strings.ToLower(prefix)) + `[a-z0-9_-]+`)
+	seen := map[string]struct{}{}
+	var labels []string
+	for _, label := range matcher.FindAllString(strings.ToLower(msg), -1) {
+		if _, ok := seen[label]; ok {
+			continue
+		}
+		seen[label] = struct{}{}
+		labels = append(labels, label)
+	}
+
+	return labels
+}
+
 func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	match := commitRegexp.FindStringSubmatch(msg)
 	var commitType, scope, description string
@@ -88,6 +107,26 @@ func ParseCommitMessage(msg string) (CommitType, string, string, bool) {
 	commitDescription = specialChars.Replace(commitDescription)
 
 	return typ, scope, commitDescription, major
+}
+
+var issueRefRegex = regexp.MustCompile(`(?:^|\s|[(\[,])#(\d+)`)
+
+// ExtractIssueRefs returns all unique issue numbers referenced in a commit message.
+func ExtractIssueRefs(msg string) []int {
+	seen := map[int]struct{}{}
+	var refs []int
+	for _, match := range issueRefRegex.FindAllStringSubmatch(msg, -1) {
+		n, err := strconv.Atoi(match[1])
+		if err != nil || n < 1 {
+			continue
+		}
+		if _, ok := seen[n]; ok {
+			continue
+		}
+		seen[n] = struct{}{}
+		refs = append(refs, n)
+	}
+	return refs
 }
 
 var releaseCommitRegex = regexp.MustCompile(`^Release (v?)(\d+).(\d+).(\d+)( \(.*\))?$`)

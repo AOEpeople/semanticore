@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type Github struct {
@@ -119,10 +120,57 @@ func (github Github) MergeRequest(target, title, description, labels string) err
 		Body:  description,
 	}
 	if iid > 0 {
-		return github.request(http.MethodPatch, fmt.Sprintf("/pulls/%d", iid), http.StatusOK, data, nil)
+		if err := github.request(http.MethodPatch, fmt.Sprintf("/pulls/%d", iid), http.StatusOK, data, nil); err != nil {
+			return err
+		}
+		return github.syncPullRequestChangeLabels(iid, labels)
 	}
 	data.Head = "semanticore/release"
-	return github.request(http.MethodPost, "/pulls", http.StatusCreated, data, nil)
+	var created struct {
+		IID int `json:"number"`
+	}
+	if err := github.request(http.MethodPost, "/pulls", http.StatusCreated, data, &created); err != nil {
+		return err
+	}
+	return github.syncPullRequestChangeLabels(created.IID, labels)
+}
+
+func (github Github) syncPullRequestChangeLabels(iid int, labels string) error {
+	if iid < 1 {
+		return nil
+	}
+
+	var existingLabels []struct {
+		Name string `json:"name"`
+	}
+	if err := github.request(http.MethodGet, fmt.Sprintf("/issues/%d/labels", iid), http.StatusOK, nil, &existingLabels); err != nil {
+		return err
+	}
+
+	existing := make([]string, 0, len(existingLabels))
+	for _, label := range existingLabels {
+		existing = append(existing, label.Name)
+	}
+
+	desired := parseLabels(labels)
+	merged := syncChangeLabels(existing, desired, namespacedLabelPrefix(desired))
+	return github.request(http.MethodPut, fmt.Sprintf("/issues/%d/labels", iid), http.StatusOK, merged, nil)
+}
+
+func (github Github) IssuePrefixedLabels(id int, prefix string) ([]string, error) {
+	var existingLabels []struct {
+		Name string `json:"name"`
+	}
+	if err := github.request(http.MethodGet, fmt.Sprintf("/issues/%d/labels", id), http.StatusOK, nil, &existingLabels); err != nil {
+		return nil, fmt.Errorf("unable to get labels for issue %d: %w", id, err)
+	}
+	var out []string
+	for _, label := range existingLabels {
+		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(label.Name)), strings.ToLower(prefix)) {
+			out = append(out, strings.TrimSpace(label.Name))
+		}
+	}
+	return out, nil
 }
 
 type githubReleaseBody struct {

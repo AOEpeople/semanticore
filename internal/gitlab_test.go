@@ -48,25 +48,33 @@ func TestGitlab(t *testing.T) {
 			"id": 123,
 			"iid": 3,
 			"source_branch": "semanticore/release",
-			"state": "opened"
+			"state": "opened",
+			"labels": ["keep-me", "change::standard"]
 		}]`)
 	})
 
-	num, err := gitlab.findOpenMergeRequest()
+	num, labels, err := gitlab.findOpenMergeRequest()
 	assert.ErrorIs(t, err, errNoMergeRequestFound)
 	assert.Equal(t, 0, num)
+	assert.Nil(t, labels)
 
 	noMrs = false
-	num, err = gitlab.findOpenMergeRequest()
+	num, labels, err = gitlab.findOpenMergeRequest()
 	assert.NoError(t, err)
 	assert.Equal(t, 3, num)
+	assert.Equal(t, []string{"keep-me", "change::standard"}, labels)
 
-	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo/merge_requests/3", func(w http.ResponseWriter, r *http.Request) {})
+	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo/merge_requests/3", func(w http.ResponseWriter, r *http.Request) {
+		assert.NoError(t, r.ParseForm())
+		if r.Method == http.MethodPut && r.Form.Get("state_event") == "" {
+			assert.Equal(t, "keep-me,change::major", r.Form.Get("labels"))
+		}
+	})
 	assert.NoError(t, gitlab.CloseMergeRequest())
 
-	assert.NoError(t, gitlab.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2"))
+	assert.NoError(t, gitlab.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2,change::major"))
 	noMrs = true
-	assert.NoError(t, gitlab.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2"))
+	assert.NoError(t, gitlab.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2,change::major"))
 
 	testmux.HandleFunc("/api/v4/projects/my%2ftest%2frepo/repository/tags", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)

@@ -19,6 +19,7 @@ type Repository struct {
 	Major, Minor, Patch int
 	VPrefix             string
 	Latest              string
+	ChangeLabel         string
 
 	fixes       []string
 	Features    []string
@@ -38,11 +39,19 @@ type Repository struct {
 
 	unreleased          string
 	unreleasedChangelog string
+
+	changeLabels map[string]struct{}
+	issueRefs    []int
 }
 
 func ReadRepository(repo *git.Repository, createMajor bool) (*Repository, error) {
+	return ReadRepositoryWithPrefix(repo, createMajor, "")
+}
+
+func ReadRepositoryWithPrefix(repo *git.Repository, createMajor bool, labelPrefix string) (*Repository, error) {
 	repository := &Repository{
-		VPrefix: "v",
+		VPrefix:     "v",
+		changeLabels: map[string]struct{}{},
 	}
 
 	tags := make(map[string][]*plumbing.Reference)
@@ -136,6 +145,21 @@ func ReadRepository(repo *git.Repository, createMajor bool) (*Repository, error)
 			continue
 		}
 		msg := strings.TrimSpace(commit.Message)
+		if labelPrefix != "" {
+			for _, label := range ExtractPrefixedLabels(msg, labelPrefix) {
+				repository.changeLabels[label] = struct{}{}
+			}
+		}
+		seenIssues := map[int]struct{}{}
+		for _, id := range repository.issueRefs {
+			seenIssues[id] = struct{}{}
+		}
+		for _, id := range ExtractIssueRefs(msg) {
+			if _, ok := seenIssues[id]; !ok {
+				repository.issueRefs = append(repository.issueRefs, id)
+				seenIssues[id] = struct{}{}
+			}
+		}
 		if match := reverst.FindStringSubmatch(msg); match != nil {
 			reverted[match[1]] = struct{}{}
 			continue
@@ -251,6 +275,78 @@ func ReadRepository(repo *git.Repository, createMajor bool) (*Repository, error)
 	}
 
 	return repository, nil
+}
+
+func (repository *Repository) CollectIssuePrefixedLabels(backend Backend, prefix string) {
+	for _, id := range repository.issueRefs {
+		labels, err := backend.IssuePrefixedLabels(id, prefix)
+		if err != nil {
+			log.Printf("[semanticore] warning: could not fetch labels for issue #%d: %v", id, err)
+			continue
+		}
+		for _, label := range labels {
+			repository.changeLabels[strings.ToLower(strings.TrimSpace(label))] = struct{}{}
+		}
+	}
+}
+
+// DetermineChangeLabel returns the highest-priority label from the configured priority list
+// that matches any label collected from commits, issues, or the semantic map.
+//
+// defaultLabel is returned when nothing matches at all.
+// It may be an empty string – in that case no label is returned for that case.
+func (repository *Repository) DetermineChangeLabel(priority []string, semanticMap map[string]string, defaultLabel string) string {
+	if len(priority) < 2 {
+		return ""
+	}
+
+	candidates := map[string]struct{}{}
+	for label := range repository.changeLabels {
+		candidates[strings.ToLower(strings.TrimSpace(label))] = struct{}{}
+	}
+
+	for semanticType, label := range semanticMap {
+		if repository.hasSemanticType(semanticType) {
+			candidates[strings.ToLower(strings.TrimSpace(label))] = struct{}{}
+		}
+	}
+
+	for _, label := range priority {
+		normalized := strings.ToLower(strings.TrimSpace(label))
+		if _, ok := candidates[normalized]; ok {
+			return strings.TrimSpace(label)
+		}
+	}
+
+
+	return defaultLabel
+}
+
+func (repository *Repository) hasSemanticType(semanticType string) bool {
+	switch strings.ToLower(strings.TrimSpace(semanticType)) {
+	case "feat", "feature", "features":
+		return len(repository.Features) > 0
+	case "fix", "bug", "bugs":
+		return len(repository.fixes) > 0
+	case "test", "tests":
+		return len(repository.tests) > 0
+	case "chore", "chores", "update", "updates":
+		return len(repository.chores) > 0
+	case "ops", "ci", "cd", "build":
+		return len(repository.ops) > 0
+	case "doc", "docs", "documentation":
+		return len(repository.docs) > 0
+	case "perf", "performance":
+		return len(repository.perf) > 0
+	case "refactor", "rework":
+		return len(repository.refactor) > 0
+	case "sec", "security":
+		return len(repository.security) > 0
+	case "other":
+		return len(repository.other) > 0
+	default:
+		return false
+	}
 }
 
 func (repository *Repository) Release(backend Backend) error {
