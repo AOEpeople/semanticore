@@ -38,6 +38,10 @@ var (
 	changelogMaxLines  = flag.Int("changelog-max-lines", 0, "trim the changelog to the last version including the maximum configured lines")
 	changelogFileName  = flag.String("changelog-file-name", emptyFallback(os.Getenv("CHANGELOG_FILE_NAME"), "Changelog.md"), "filename for changelog, falls back to env var CHANGELOG_FILE_NAME and afterwards to \"Changelog.md\"")
 	signKeyFilePath    = flag.String("sign-key-file", emptyFallback(os.Getenv("SEMANTICORE_SIGN_KEY_FILE"), ""), "path to GPG private key file for signing commits")
+	changeLabelsEnabled        = flag.Bool("change-labels-enabled", strings.EqualFold(os.Getenv("SEMANTICORE_CHANGE_LABELS_ENABLED"), "true"), "enable change label sync for merge requests")
+	changeLabels               = flag.String("change-labels", emptyFallback(os.Getenv("SEMANTICORE_CHANGE_LABELS"), ""), "CSV list of labels in priority order (highest first), e.g. change::emergency,change::major,change::normal,change::standard")
+	changeLabelMap             = flag.String("change-label-map", emptyFallback(os.Getenv("SEMANTICORE_CHANGE_LABEL_MAP"), ""), "CSV list mapping semantic commit types to labels, e.g. feat=change::normal,chore=change::standard")
+	changeLabelDefault         = flag.String("change-label-default", emptyFallback(os.Getenv("SEMANTICORE_CHANGE_LABEL_DEFAULT"), ""), "label to use when no commit label matches; must be in --change-labels")
 )
 
 func main() {
@@ -71,7 +75,15 @@ func main() {
 	head, err := repo.Head()
 	try(err)
 
-	repository, err := internal.ReadRepository(repo, *createMajor)
+	// derive label prefix from configured labels when the feature is enabled
+	labelPrefix := ""
+	if *changeLabelsEnabled {
+		if priority, ok := parseChangeLabels(*changeLabels); ok {
+			labelPrefix = commonLabelPrefix(priority)
+		}
+	}
+
+	repository, err := internal.ReadRepositoryWithPrefix(repo, *createMajor, labelPrefix)
 	try(err)
 
 	if backend != nil && *createRelease {
@@ -175,6 +187,24 @@ func main() {
 		releasetype = "minor 📦"
 	}
 	labels := "Release 🏆," + releasetype
+	if *changeLabelsEnabled {
+		if priority, ok := parseChangeLabels(*changeLabels); ok {
+			if backend != nil {
+				repository.CollectIssuePrefixedLabels(backend, labelPrefix)
+			}
+			defaultLabel, defaultOk := parseChangeLabelDefault(*changeLabelDefault, priority)
+			if !defaultOk {
+				log.Printf("[semanticore] change labels are enabled but SEMANTICORE_CHANGE_LABEL_DEFAULT is not part of SEMANTICORE_CHANGE_LABELS, disabling feature")
+			} else if semanticMap, ok := parseChangeLabelMap(*changeLabelMap, priority); ok {
+				repository.ChangeLabel = repository.DetermineChangeLabel(priority, semanticMap, defaultLabel)
+				labels += "," + repository.ChangeLabel
+			} else {
+				log.Printf("[semanticore] change labels are enabled but SEMANTICORE_CHANGE_LABEL_MAP is invalid, disabling feature")
+			}
+		} else {
+			log.Printf("[semanticore] change labels are enabled but SEMANTICORE_CHANGE_LABELS is invalid, disabling feature")
+		}
+	}
 	description := fmt.Sprintf(`# Release %s%d.%d.%d 🏆
 
 ## Summary
@@ -205,3 +235,97 @@ func emptyFallback(s, fallback string) string {
 
 	return s
 }
+
+func parseChangeLabels(raw string) ([]string, bool) {
+	parts := strings.Split(raw, ",")
+	if len(parts) < 2 {
+		return nil, false
+	}
+
+	seen := map[string]struct{}{}
+	out := make([]string, 0, len(parts))
+	for _, part := range parts {
+		label := strings.TrimSpace(strings.ToLower(part))
+		if label == "" || !strings.Contains(label, "::") {
+			return nil, false
+		}
+		if _, ok := seen[label]; ok {
+			return nil, false
+		}
+		seen[label] = struct{}{}
+		out = append(out, label)
+	}
+
+	return out, true
+}
+
+// commonLabelPrefix returns the longest common prefix shared by all labels,
+// e.g. ["change::emergency","change::normal"] → "change::".
+// Returns "" if no common prefix exists.
+func commonLabelPrefix(labels []string) string {
+	if len(labels) == 0 {
+		return ""
+	}
+	prefix := labels[0]
+	for _, label := range labels[1:] {
+		for !strings.HasPrefix(label, prefix) {
+			if len(prefix) == 0 {
+				return ""
+			}
+			prefix = prefix[:len(prefix)-1]
+		}
+	}
+	return prefix
+}
+
+// parseChangeLabelDefault validates that defaultLabel is present in the
+// priority list. Empty string is allowed (no default configured).
+func parseChangeLabelDefault(defaultLabel string, priority []string) (string, bool) {
+	allowed := map[string]struct{}{}
+	for _, l := range priority {
+		allowed[strings.ToLower(strings.TrimSpace(l))] = struct{}{}
+	}
+	dl := strings.ToLower(strings.TrimSpace(defaultLabel))
+	if dl != "" {
+		if _, ok := allowed[dl]; !ok {
+			return "", false
+		}
+	}
+	return dl, true
+}
+
+func parseChangeLabelMap(raw string, priority []string) (map[string]string, bool) {
+	allowed := map[string]struct{}{}
+	for _, label := range priority {
+		allowed[strings.ToLower(strings.TrimSpace(label))] = struct{}{}
+	}
+
+	out := map[string]string{}
+	if strings.TrimSpace(raw) == "" {
+		return out, true
+	}
+
+	for _, entry := range strings.Split(raw, ",") {
+		parts := strings.SplitN(entry, "=", 2)
+		if len(parts) != 2 {
+			return nil, false
+		}
+
+		semanticType := strings.ToLower(strings.TrimSpace(parts[0]))
+		label := strings.ToLower(strings.TrimSpace(parts[1]))
+		if semanticType == "" || label == "" {
+			return nil, false
+		}
+		if _, ok := allowed[label]; !ok {
+			return nil, false
+		}
+		if _, ok := out[semanticType]; ok {
+			return nil, false
+		}
+
+		out[semanticType] = label
+	}
+
+	return out, true
+}
+

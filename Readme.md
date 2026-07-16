@@ -73,6 +73,34 @@ If none of these is set, Semanticore will use `Semanticore Bot` as name and `sem
 To configure the name of the changelog file, you can use the `CHANGELOG_FILE_NAME`. environment variable. If this variable is not set,
 the default value `Changelog.md` will be used.
 
+### Change label synchronization
+
+Semanticore can propagate a `change::...` label to the release MR/PR.
+
+This feature is disabled by default and only becomes active when both settings are configured:
+
+* `SEMANTICORE_CHANGE_LABELS_ENABLED=true`
+* `SEMANTICORE_CHANGE_LABELS` with a CSV list of **at least two** full labels in priority order
+  (highest priority first)
+* `SEMANTICORE_CHANGE_LABEL_DEFAULT` – label returned when nothing matches at all;
+  must be contained in `SEMANTICORE_CHANGE_LABELS`
+
+The default fallback is optional. When not set, no label is added for the no-match case.
+
+Example:
+
+* `SEMANTICORE_CHANGE_LABELS=change::emergency,change::major,change::normal,change::standard`
+
+You can optionally map semantic commit types to change labels:
+
+* `SEMANTICORE_CHANGE_LABEL_MAP=feat=change::normal,chore=change::standard,ops=change::standard`
+
+Use the map to define feature fallback behavior, e.g. map `feat` to `change::normal`.
+
+Each mapped label must be part of `SEMANTICORE_CHANGE_LABELS`, otherwise the feature is disabled.
+
+When active, Semanticore always synchronizes only labels starting with `change::` and keeps all other labels untouched.
+
 ## Using Semanticore
 
 To test Semanticore locally you can run it without an API token to create an example Changelog:

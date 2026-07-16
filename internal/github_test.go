@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -38,6 +39,7 @@ func TestGithub(t *testing.T) {
 	testmux.HandleFunc("/repos/my/testrepo/pulls", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusCreated)
+			fmt.Fprint(w, `{"number": 4}`)
 			return
 		}
 		if noMrs {
@@ -64,11 +66,31 @@ func TestGithub(t *testing.T) {
 	assert.Equal(t, 3, num)
 
 	testmux.HandleFunc("/repos/my/testrepo/pulls/3", func(w http.ResponseWriter, r *http.Request) {})
+	testmux.HandleFunc("/repos/my/testrepo/issues/3/labels", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			fmt.Fprint(w, `[{"name":"keep-me"},{"name":"change::standard"}]`)
+			return
+		}
+
+		var labels []string
+		assert.NoError(t, json.NewDecoder(r.Body).Decode(&labels))
+		assert.Equal(t, []string{"keep-me", "change::major"}, labels)
+	})
+	testmux.HandleFunc("/repos/my/testrepo/issues/4/labels", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			fmt.Fprint(w, `[{"name":"manual"}]`)
+			return
+		}
+
+		var labels []string
+		assert.NoError(t, json.NewDecoder(r.Body).Decode(&labels))
+		assert.Equal(t, []string{"manual", "change::major"}, labels)
+	})
 	assert.NoError(t, github.CloseMergeRequest())
 
-	assert.NoError(t, github.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2"))
+	assert.NoError(t, github.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2,change::major"))
 	noMrs = true
-	assert.NoError(t, github.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2"))
+	assert.NoError(t, github.MergeRequest("main", "Release v1.2.3", "release description", "tag1,tag2,change::major"))
 
 	testmux.HandleFunc("/repos/my/testrepo/releases", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)

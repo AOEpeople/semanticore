@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"fmt"
+	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/go-git/go-billy/v5/memfs"
@@ -25,9 +28,11 @@ func (b *testBackend) Release(tag, ref, changelog string) error {
 	b.changelog = changelog
 	return nil
 }
-func (*testBackend) MergeRequest(target, title, description, labels string) error { return nil }
-func (*testBackend) CloseMergeRequest() error                                     { return nil }
-func (*testBackend) MainBranch() (string, error)                                  { return "main", nil }
+func (*testBackend) MergeRequest(_, _, _, _ string) error              { return nil }
+func (*testBackend) CloseMergeRequest() error                          { return nil }
+func (*testBackend) MainBranch() (string, error)                       { return "main", nil }
+func (*testBackend) IssuePrefixedLabels(_ int, _ string) ([]string, error) { return nil, nil }
+func (*testBackend) SetAuth(_ *http.Request)                           {}
 
 func TestReadRepository(t *testing.T) {
 	mockRepo, err := git.Init(memory.NewStorage(), memfs.New())
@@ -159,4 +164,100 @@ func TestReadRepository(t *testing.T) {
 	assert.Equal(t, 0, repository.Major)
 	assert.Equal(t, 1, repository.Minor)
 	assert.Equal(t, 0, repository.Patch)
+}
+
+func TestCollectIssuePrefixedLabels(t *testing.T) {
+	priority := []string{"change::emergency", "change::major", "change::normal", "change::standard"}
+
+	backend := &issueBackend{labels: map[int][]string{
+		42:  {"change::major", "other-label"},
+		123: {"change::normal"},
+		99:  nil,
+	}}
+
+	repo := &Repository{
+		changeLabels: map[string]struct{}{},
+		issueRefs:    []int{42, 123, 99, 999},
+	}
+	repo.CollectIssuePrefixedLabels(backend, "change::")
+
+	assert.Equal(t, "change::major", repo.DetermineChangeLabel(priority, nil, "change::standard"))
+}
+
+type issueBackend struct {
+	labels map[int][]string
+}
+
+func (*issueBackend) String() string                                    { return "issueBackend" }
+func (*issueBackend) Name() string                                      { return "issueBackend" }
+func (*issueBackend) SetAuth(_ *http.Request)                           {}
+func (*issueBackend) Release(_, _, _ string) error                     { return nil }
+func (*issueBackend) MergeRequest(_, _, _, _ string) error             { return nil }
+func (*issueBackend) CloseMergeRequest() error                         { return nil }
+func (*issueBackend) MainBranch() (string, error)                      { return "main", nil }
+func (b *issueBackend) IssuePrefixedLabels(id int, prefix string) ([]string, error) {
+	labels, ok := b.labels[id]
+	if !ok {
+		return nil, fmt.Errorf("issue %d not found", id)
+	}
+	var out []string
+	for _, label := range labels {
+		if strings.HasPrefix(strings.ToLower(label), strings.ToLower(prefix)) {
+			out = append(out, label)
+		}
+	}
+	return out, nil
+}
+
+func TestDetermineChangeLabel(t *testing.T) {
+	priority := []string{"change::emergency", "change::major", "change::normal", "change::standard"}
+	dl := "change::standard"
+
+	// explicit label match
+	repo := &Repository{changeLabels: map[string]struct{}{"change::major": {}}}
+	assert.Equal(t, "change::major", repo.DetermineChangeLabel(priority, nil, dl))
+
+	// no feature mapping -> default
+	repo = &Repository{Features: []string{"new feat"}, changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::standard", repo.DetermineChangeLabel(priority, nil, dl))
+
+	// feature mapping via semantic map
+	repo = &Repository{Features: []string{"new feat"}, changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::normal", repo.DetermineChangeLabel(priority, map[string]string{"feat": "change::normal"}, dl))
+
+	// no match → default
+	repo = &Repository{changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::standard", repo.DetermineChangeLabel(priority, nil, dl))
+
+	// no default configured → empty string
+	repo = &Repository{Features: []string{"x"}, changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "", repo.DetermineChangeLabel(priority, nil, ""))
+
+	// semantic map match
+	repo = &Repository{chores: []string{"chore message"}, changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::standard", repo.DetermineChangeLabel(priority, map[string]string{"chore": "change::standard"}, dl))
+
+	// explicit label beats lower-priority semantic map entry
+	repo = &Repository{ops: []string{"ops message"}, changeLabels: map[string]struct{}{"change::major": {}}}
+	assert.Equal(t, "change::major", repo.DetermineChangeLabel(priority, map[string]string{"ops": "change::standard"}, dl))
+
+	// 3-label variant with explicit default + map
+	priority3 := []string{"change::emergency", "change::normal", "change::standard"}
+	repo = &Repository{changeLabels: map[string]struct{}{"change::emergency": {}}}
+	assert.Equal(t, "change::emergency", repo.DetermineChangeLabel(priority3, nil, "change::standard"))
+	repo = &Repository{Features: []string{"x"}, changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::normal", repo.DetermineChangeLabel(priority3, map[string]string{"feat": "change::normal"}, "change::standard"))
+	repo = &Repository{changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::standard", repo.DetermineChangeLabel(priority3, nil, "change::standard"))
+
+	// 5-label variant with custom mapping + explicit default
+	priority5 := []string{"change::emergency", "change::major", "change::normal", "change::minor", "change::standard"}
+	repo = &Repository{Features: []string{"x"}, changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::minor", repo.DetermineChangeLabel(priority5, map[string]string{"feat": "change::minor"}, "change::standard"))
+	repo = &Repository{changeLabels: map[string]struct{}{}}
+	assert.Equal(t, "change::standard", repo.DetermineChangeLabel(priority5, nil, "change::standard"))
+
+	// < 2 priority → disabled
+	assert.Equal(t, "", repo.DetermineChangeLabel([]string{"change::major"}, nil, ""))
+	assert.Equal(t, "", repo.DetermineChangeLabel(nil, nil, ""))
 }
