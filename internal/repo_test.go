@@ -2,11 +2,13 @@ package internal
 
 import (
 	"testing"
+	"time"
 
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/stretchr/testify/assert"
 )
@@ -159,4 +161,49 @@ func TestReadRepository(t *testing.T) {
 	assert.Equal(t, 0, repository.Major)
 	assert.Equal(t, 1, repository.Minor)
 	assert.Equal(t, 0, repository.Patch)
+}
+
+// Tags that merely contain a long run of digits, like a ticket id in archive/123456-feature,
+// must not be read as a version. The unescaped dots of the old regex matched any character.
+func TestReadRepositoryIgnoresTagsWithoutDottedVersion(t *testing.T) {
+	cases := []struct {
+		name string
+		tag  string
+	}{
+		{"ticket id in a prefixed name", "archive/123456-feature"},
+		{"five digit id", "archive/12345-feature"},
+		{"seven digit id", "archive/1234567-feature"},
+		{"bare id", "54321"},
+		{"version with a missing dot", "1.2-123456"},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			mockRepo, err := git.Init(memory.NewStorage(), memfs.New())
+			assert.NoError(t, err)
+			mockWt, err := mockRepo.Worktree()
+			assert.NoError(t, err)
+			file, err := mockWt.Filesystem.Create("test.file")
+			assert.NoError(t, err)
+
+			start := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+			testCommit := func(msg string, minutes int) plumbing.Hash {
+				file.Write([]byte(msg))
+				mockWt.Add("test.file")
+				sig := &object.Signature{Name: "testing", Email: "testing@example.com", When: start.Add(time.Duration(minutes) * time.Minute)}
+				hash, err := mockWt.Commit(msg, &git.CommitOptions{Author: sig, Committer: sig})
+				assert.NoError(t, err)
+				return hash
+			}
+
+			_, err = mockRepo.CreateTag("2.5.1", testCommit("chore: first", 0), nil)
+			assert.NoError(t, err)
+			_, err = mockRepo.CreateTag(c.tag, testCommit("chore: second", 1), nil)
+			assert.NoError(t, err)
+
+			repository, err := ReadRepository(mockRepo, true)
+			assert.NoError(t, err)
+			assert.Equal(t, "2.5.1", repository.Latest)
+			assert.Len(t, repository.chores, 1)
+		})
+	}
 }

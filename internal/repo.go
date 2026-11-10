@@ -71,7 +71,7 @@ func ReadRepository(repo *git.Repository, createMajor bool) (*Repository, error)
 		return nil, fmt.Errorf("unable to read repository log: %w", err)
 	}
 
-	vregex := regexp.MustCompile(`(v?)(\d+).(\d+).(\d+)`)
+	vregex := regexp.MustCompile(`(v?)(\d+)\.(\d+)\.(\d+)`)
 	var ancestor *object.Commit
 	glog.ForEach(func(c *object.Commit) error {
 		if tags, ok := tags[c.Hash.String()]; ok {
