@@ -87,6 +87,10 @@ func TestDetectReleaseCommit(t *testing.T) {
 		{"Release 1.2.3 (#15)\n\nCo-authored-by: test", false, "", 1, 2, 3},
 		{"Release 1.2.3 (#15)", true, "", 1, 2, 3},
 		{"Merge a into b\n\nRelease 1.2.3\n\nFoo bar", true, "", 1, 2, 3},
+		{"Release 123456", false, "v", 0, 0, 0},
+		{"Release 123456 (#15)", false, "v", 0, 0, 0},
+		{"Merge a into b\n\nRelease 123456\n\nFoo bar", true, "v", 0, 0, 0},
+		{"Release 1.2-3", false, "v", 0, 0, 0},
 	}
 	for _, c := range cases {
 		vPrefix, major, minor, patch := DetectReleaseCommit(c.commit, c.merge)
